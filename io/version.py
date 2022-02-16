@@ -5,9 +5,12 @@ from pydantic import BaseModel
 VersionID = str
 
 
+#class Scores(BaseModel):
+#    precision: float
+#    recall: float
+
 class Scores(BaseModel):
-    precision: float
-    recall: float
+    f1_macro: float
 
 
 class ModelVersion(BaseModel):
