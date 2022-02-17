@@ -10,7 +10,9 @@ VersionID = str
 #    recall: float
 
 class Scores(BaseModel):
-    f1_macro: float
+    f1_macro: Optional[float]
+    f1_micro: Optional[float]
+    f1_weighted: Optional[float]
 
 
 class ModelVersion(BaseModel):
