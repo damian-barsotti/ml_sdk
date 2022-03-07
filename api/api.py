@@ -44,7 +44,8 @@ class MLAPI:
 
         # Database
         if self.DATABASE_TYPE == RedisDatabase:
-            db_settings = RedisSettings(topic=f"{self.MODEL_NAME}_jobs", host='redis')
+            db_settings = RedisSettings(topic=f"{self.MODEL_NAME}_jobs", 
+                                        host='redis')
         elif self.DATABASE_TYPE == MongoDatabase:
             db_settings = MongoSettings(db=self.MODEL_NAME, host='mongo')
         else:
@@ -58,8 +59,10 @@ class MLAPI:
     def _validate_instance(self):
         assert self.INPUT_TYPE is not None, "You have to setup an INPUT_TYPE"
         assert self.OUTPUT_TYPE is not None, "You have to setup an OUTPUT_TYPE"
-        assert self.COMMUNICATION_TYPE is not None, "You have to setup a COMMUNICATION_TYPE"
-        assert self.DATABASE_TYPE is not None, "You have to setup a DATABASE_TYPE"
+        assert self.COMMUNICATION_TYPE is not None, ("You have to setup"
+                                                     " a COMMUNICATION_TYPE")
+        assert self.DATABASE_TYPE is not None, ("You have to setup"
+                                                " a DATABASE_TYPE")
         assert self.MODEL_NAME is not None, "You have to setup a MODEL_NAME"
 
     def _add_routes(self):
@@ -98,6 +101,7 @@ class MLAPI:
     # VIEWS
     def post_predict(self):
         connector = self.connector
+        
         def _inner(input_: self.INPUT_TYPE) -> self.OUTPUT_TYPE:
             results = connector.dispatch('predict', input_=input_.dict())
             return results

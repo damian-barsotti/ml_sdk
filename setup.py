@@ -13,7 +13,8 @@ with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
 setup(
     name='ml_sdk',
     version='1.4.1',
-    description='An SDK to deploy your ML models in a common API made with FastAPI',
+    description='An SDK to deploy your ML models'
+                ' in a common API made with FastAPI',
     long_description=long_description,
     url='https://pypi.python.org/pypi/mlsdk',
     author='Matias',
@@ -36,6 +37,6 @@ setup(
         'ml_sdk.database',
         'ml_sdk.api',
     ],
-    package_dir = {'ml_sdk':'.'},
+    package_dir={'ml_sdk': '.'},
     install_requires=requirements
 )
