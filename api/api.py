@@ -44,7 +44,7 @@ class MLAPI:
 
         # Database
         if self.DATABASE_TYPE == RedisDatabase:
-            db_settings = RedisSettings(topic=f"{self.MODEL_NAME}_jobs", 
+            db_settings = RedisSettings(topic=f"{self.MODEL_NAME}_jobs",
                                         host='redis')
         elif self.DATABASE_TYPE == MongoDatabase:
             db_settings = MongoSettings(db=self.MODEL_NAME, host='mongo')
@@ -101,7 +101,7 @@ class MLAPI:
     # VIEWS
     def post_predict(self):
         connector = self.connector
-        
+
         def _inner(input_: self.INPUT_TYPE) -> self.OUTPUT_TYPE:
             results = connector.dispatch('predict', input_=input_.dict())
             return results
@@ -121,7 +121,7 @@ class MLAPI:
 
     def post_test(self, input_: FileInput = File(...)) -> TestJob:
         # parsing
-        items = list(self._parse_file(input_)) # TODO consume 1 by 1
+        items = list(self._parse_file(input_))  # TODO consume 1 by 1
 
         # job creation
         job = self.database.create_test_job(total=len(items))
@@ -135,7 +135,7 @@ class MLAPI:
 
     def post_train(self, input_: FileInput = File(...)) -> TrainJob:
         # parsing
-        items = list(self._parse_file(input_)) # TODO consume 1 by 1
+        items = list(self._parse_file(input_))  # TODO consume 1 by 1
         # TODO move this parsing to the async_train
         try:
             for i in items:
@@ -151,7 +151,8 @@ class MLAPI:
             traceback.print_exc()
             return JSONResponse(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                content=jsonable_encoder({"detail": exc, "Error": "Input file corrupt"}),
+                content=jsonable_encoder(
+                    {"detail": exc, "Error": "Input file corrupt"}),
             )
 
         # job creation
@@ -170,13 +171,15 @@ class MLAPI:
         return input_
 
     def index(self) -> ModelDescription:
-        return ModelDescription(**{"model": self.MODEL_NAME,\
-                                   "description": self.DESCRIPTION,
-                                   "version": self.connector.dispatch('enabled_version')})
+        return ModelDescription(
+            **{"model": self.MODEL_NAME,
+               "description": self.DESCRIPTION,
+               "version": self.connector.dispatch('enabled_version')})
 
     # INTERNAL
     def _parse_file(self, input_: FileInput):
-        assert callable(self.FILE_PARSER), "You have to setup first a FILE_PARSER"
+        assert callable(
+            self.FILE_PARSER), "You have to setup first a FILE_PARSER"
         parser = self.FILE_PARSER()
         items = parser.parse(input_.file)
         yield from items
@@ -188,7 +191,8 @@ class MLAPI:
         with self.FILE_PARSER.build(lines=lines) as file_content:
             response = StreamingResponse(file_content,
                                          media_type=media_type)
-            response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+            response.headers["Content-Disposition"] = (
+                f"attachment; filename={filename}")
         return response
 
     def _async_predict(self, job: TestJob, items: List):
@@ -198,13 +202,16 @@ class MLAPI:
                 try:
                     item = self.INPUT_TYPE(**item)
                 except Exception as e:
-                    logger.info(f"Ommited {item} Failure during parsing: {str(e)}")
+                    logger.info(
+                        f"Ommited {item} Failure during parsing: {str(e)}")
                 else:
                     inference_result = predict_func(item)
-                    self.database.update_test_job(job=job, task=self.OUTPUT_TYPE(**inference_result))
+                    self.database.update_test_job(
+                        job=job, task=self.OUTPUT_TYPE(**inference_result))
 
         for i in range(0, len(items), BATCH_SIZE):
-            t = threading.Thread(target=_inner, args=(self.database, job, items[i:i+BATCH_SIZE]))
+            t = threading.Thread(target=_inner, args=(
+                self.database, job, items[i:i+BATCH_SIZE]))
             t.start()
 
     def _async_train(self, job: TestJob, items: List):
@@ -212,6 +219,7 @@ class MLAPI:
         # TODO write registries with threads and then trigger the train.
 
         import threading
+
         def _inner(database, job, items):
             model_version = self.connector.dispatch('train', input_=items)
             self.database.update_train_job(job=job, version=model_version)
