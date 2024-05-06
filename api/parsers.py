@@ -7,11 +7,11 @@ from typing import Iterable
 
 
 def _flat_dict(pyobj, keystring=''):
-    if type(pyobj) == dict:
+    if isinstance(pyobj, dict):
         keystring = keystring + '_' if keystring else keystring
         for k in pyobj:
             yield from _flat_dict(pyobj[k], keystring + str(k))
-    elif type(pyobj) == list:
+    elif isinstance(pyobj, list):
         keystring = keystring + '_' if keystring else keystring
         for n, obj in enumerate(pyobj):
             yield from _flat_dict(obj, keystring + str(n))
