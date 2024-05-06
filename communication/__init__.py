@@ -1,6 +1,5 @@
 import uuid
 from abc import ABCMeta, abstractmethod
-from typing import Dict
 
 
 class WorkerInterface(metaclass=ABCMeta):

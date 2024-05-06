@@ -3,7 +3,6 @@ import uuid
 import pymongo
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict
 from ml_sdk.database import DatabaseInterface
 from ml_sdk.io import TestJob, TrainJob, JobID, InferenceOutput, ModelVersion
 

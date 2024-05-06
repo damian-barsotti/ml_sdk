@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from uuid import UUID
-from typing import List, Dict, Union
+from typing import List, Dict
 
 
 class Output(BaseModel):

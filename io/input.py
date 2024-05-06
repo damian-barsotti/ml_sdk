@@ -1,7 +1,5 @@
-import json
-from typing import Dict, Any, List
+from typing import Dict, List
 
-from enum import Enum
 from fastapi import UploadFile
 import pandas as pd
 from pydantic import BaseModel

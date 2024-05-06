@@ -4,15 +4,13 @@ import threading
 from fastapi import APIRouter, File, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse, JSONResponse
-from typing import List, Dict
+from typing import List
 from ml_sdk.api.parsers import CSVFileParser
 from ml_sdk.communication.redis import RedisDispatcher, RedisSettings
 from ml_sdk.database.redis import RedisDatabase
 from ml_sdk.database.mongo import MongoDatabase, MongoSettings
 from ml_sdk.io import (
     FileInput,
-    InferenceOutput,
-    InferenceInput,
     TestJob,
     TrainJob,
     JobID,

@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ml_sdk.io import TestJob, TrainJob, JobID, JobID, InferenceOutput
+from ml_sdk.io import TestJob, TrainJob, JobID, InferenceOutput
 
 
 class DatabaseInterface(metaclass=ABCMeta):

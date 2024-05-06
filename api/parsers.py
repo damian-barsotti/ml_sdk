@@ -1,4 +1,3 @@
-import csv
 import pandas as pd
 from datetime import datetime
 from abc import abstractmethod, ABCMeta
@@ -81,7 +80,9 @@ class CSVFileParser(FileParser):
 
 
 class XLSXFileParser(FileParser):
-    mediatype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    mediatype = (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
     @staticmethod
     def parse(file: SpooledTemporaryFile) -> Iterable:

@@ -8,10 +8,9 @@ from ml_sdk.io.input import (
 from ml_sdk.io.version import ModelVersion, ModelDescription
 from ml_sdk.io.output import (
     Output,
-    InferenceOutput,
-    ScoreOutput,
     ClassificationOutput,
-    MultiClassificationOutput,
+    InferenceOutput,
+    ScoreOutput
 )
 
 
@@ -40,9 +39,9 @@ __all__ = [
     'ImageInput',
     'InferenceInput',
     'InferenceOutput',
-    'ScoreOutput'
     'ClassificationOutput',
-    'MultiClassificationOutput'
+    'ScoreOutput',
+    'MultiClassificationOutput',
     'ModelVersion',
     'ModelDescription',
     'TrainJob',
