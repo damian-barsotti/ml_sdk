@@ -28,7 +28,7 @@ class RedisNode:
         self.topic = settings.topic
         redis_pool = redis.ConnectionPool(**settings.conf)
         self.redis = redis.StrictRedis(connection_pool=redis_pool)
-   
+
     @staticmethod
     def _decode(msg):
         return msgpack.unpackb(msg, use_list=False, raw=False)
@@ -102,6 +102,7 @@ class RedisWorker(RedisNode, WorkerInterface):
 
     def _produce(self, message, key=None):
         self._set(key, message)
+
 
 class RedisDispatcher(RedisNode, DispatcherInterface):
 

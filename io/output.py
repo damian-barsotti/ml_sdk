@@ -28,11 +28,14 @@ class Classification(Output):
 class ScoreOutput(InferenceOutput, Score):
     pass
 
+
 class ScoredClassification(Classification, Score):
     pass
 
+
 class ClassificationOutput(InferenceOutput, ScoredClassification):
     pass
+
 
 class MultiClassificationOutput(ClassificationOutput):
     predictions: List[ScoredClassification] = []

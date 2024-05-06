@@ -17,6 +17,7 @@ from ml_sdk.io.output import (
 
 JobID = str
 
+
 class Job(Output):
     job_id: JobID
     total: int

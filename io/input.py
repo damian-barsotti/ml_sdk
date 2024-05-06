@@ -42,8 +42,11 @@ class InferenceInput(Input):
         return [getattr(i, field_name) for i in input_]
 
 # Basic inference types
+
+
 class TextInput(InferenceInput):
     text: str
+
 
 ImageInput = UploadFile
 FileInput = UploadFile

@@ -18,7 +18,7 @@ class WorkerInterface(metaclass=ABCMeta):
 
     def _set_reply(self, key, message):
         self._produce(message, key)
-    
+
     def serve_forever(self):
         self.stop = False
         while not self.stop:
@@ -30,7 +30,7 @@ class WorkerInterface(metaclass=ABCMeta):
     @abstractmethod
     def _produce(self, message, key=None):
         pass
-    
+
     @abstractmethod
     def _consume(self, key=None):
         pass
@@ -63,7 +63,7 @@ class DispatcherInterface(metaclass=ABCMeta):
     @abstractmethod
     def _broadcast(self, message):
         pass
-    
+
     @abstractmethod
     def _consume(self, key=None):
         pass

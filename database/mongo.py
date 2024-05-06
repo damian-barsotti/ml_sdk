@@ -73,5 +73,5 @@ class MongoDatabase(DatabaseInterface):
         job.processed = job.total
         job.version = version
         job.end_at = str(datetime.now())
-        filter_ = { "job_id": job.job_id }
-        self.mongo_jobs.update_one(filter_, { "$set": dict(job) })
+        filter_ = {"job_id": job.job_id}
+        self.mongo_jobs.update_one(filter_, {"$set": dict(job)})

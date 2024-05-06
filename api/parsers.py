@@ -66,7 +66,7 @@ class CSVFileParser(FileParser):
 
         for index, line in enumerate(lines):
             line = _flat_dict(line.dict())
-            line = { key: value for key, value in line}
+            line = {key: value for key, value in line}
             records.append(line)
 
         df = pd.DataFrame(records)
@@ -97,7 +97,7 @@ class XLSXFileParser(FileParser):
 
         for index, line in enumerate(lines):
             line = _flat_dict(line.dict())
-            line = { key: value for key, value in line}
+            line = {key: value for key, value in line}
             records.append(line)
 
         df = pd.DataFrame(records)
