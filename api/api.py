@@ -15,7 +15,8 @@ from ml_sdk.io import (
     TrainJob,
     JobID,
 )
-from ml_sdk.io.version import ModelVersion, ModelDescription, VersionID, AvailableModels
+from ml_sdk.io.version import (ModelVersion, ModelDescription,
+                               VersionID, AvailableModels)
 
 
 logger = logging.getLogger()
