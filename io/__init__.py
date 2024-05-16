@@ -5,7 +5,7 @@ from ml_sdk.io.input import (
     InferenceInput,
     FileInput,
 )
-from ml_sdk.io.version import ModelVersion, ModelDescription
+from ml_sdk.io.version import ModelVersion, ModelDescription, AvailableModels
 from ml_sdk.io.output import (
     Output,
     ClassificationOutput,
@@ -44,6 +44,7 @@ __all__ = [
     'MultiClassificationOutput',
     'ModelVersion',
     'ModelDescription',
+    'AvailableModels',
     'TrainJob',
     'TestJob',
 ]

@@ -15,7 +15,7 @@ from ml_sdk.io import (
     TrainJob,
     JobID,
 )
-from ml_sdk.io.version import ModelVersion, ModelDescription, VersionID
+from ml_sdk.io.version import ModelVersion, ModelDescription, VersionID, AvailableModels
 
 
 logger = logging.getLogger()
@@ -160,8 +160,10 @@ class MLAPI:
         self._async_train(job=job, items=items)
         return job
 
-    def get_version(self) -> ModelVersion:
-        return self.connector.dispatch('available_versions')
+    def get_version(self) -> AvailableModels:
+        result = self.connector.dispatch('available_versions')
+        logger.info(f"get_version {result=}")
+        return result
 
     def post_version(self, version_id: VersionID):
         input_ = ModelVersion(version=version_id)

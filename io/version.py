@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -19,3 +19,8 @@ class ModelDescription(BaseModel):
     model: str
     description: Optional[str]
     version: ModelVersion = None
+
+
+class AvailableModels(BaseModel):
+    enabled: ModelVersion
+    availables: List[ModelVersion]
