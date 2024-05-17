@@ -1,5 +1,6 @@
 import uuid
 from abc import ABCMeta, abstractmethod
+from typing import Dict
 
 
 class WorkerInterface(metaclass=ABCMeta):
@@ -34,8 +35,9 @@ class WorkerInterface(metaclass=ABCMeta):
     def _consume(self, key=None):
         pass
 
-    def _load_input_data(self, **kwargs):
-        return {}
+    @abstractmethod
+    def _load_input_data(self, **kwargs) -> Dict:
+        pass
 
 
 class DispatcherInterface(metaclass=ABCMeta):
