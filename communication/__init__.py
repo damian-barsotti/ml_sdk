@@ -4,20 +4,23 @@ from typing import Dict
 
 
 class WorkerInterface(metaclass=ABCMeta):
+
     def _listen(self):
+
+        def set_reply(key, message):
+            self._produce(message, key)
+
+        def execute(method, *args, **kwargs):
+            func = getattr(self.handler, method)
+            return func(**kwargs)
+
         key, kwargs = self._consume()
         method = kwargs.pop('method', None)
         kwargs.update(self._load_input_data(**kwargs))
-        result = self._execute(method, **kwargs)
+        result = execute(method, **kwargs)
+
         if key:
-            self._set_reply(key, result)
-
-    def _execute(self, method, *args, **kwargs):
-        func = getattr(self.handler, method)
-        return func(**kwargs)
-
-    def _set_reply(self, key, message):
-        self._produce(message, key)
+            set_reply(key, result)
 
     def serve_forever(self):
         self.stop = False
