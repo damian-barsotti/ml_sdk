@@ -72,5 +72,6 @@ class DispatcherInterface(metaclass=ABCMeta):
     def _consume(self, key=None):
         pass
 
-    def _save_input_data(self, **kwargs):
-        return {}
+    @abstractmethod
+    def _save_input_data(self, **kwargs) -> Dict:
+        pass
