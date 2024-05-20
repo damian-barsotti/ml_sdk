@@ -12,13 +12,13 @@ with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='ml_sdk',
-    version='1.4.4',
+    version='1.4.5',
     description='An SDK to deploy your ML models'
                 ' in a common API made with FastAPI',
     long_description=long_description,
     url='https://pypi.python.org/pypi/mlsdk',
-    author='Matias',
-    author_email='matias.gaston.silva@mi.unc.edu.ar',
+    author='Damian',
+    author_email='damian.barsotti@unc.edu.ar',
     license='GNU GPLv3',
     classifiers=[
         'Development Status :: 4 - Beta',
