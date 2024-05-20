@@ -2,7 +2,6 @@ import time
 import msgpack
 import logging
 import redis
-import uuid
 from dataclasses import dataclass
 from ml_sdk.communication import DispatcherInterface, WorkerInterface
 
@@ -73,23 +72,6 @@ class RedisNode:
             message = self._decode(message)
             key = message.pop('key')
         return key, message
-
-    def _load_input_data(self, **kwargs):
-        input_ = kwargs.pop('input_', None)
-        if not isinstance(input_, str):
-            return {}
-        items = [self._decode(item) for item in self.redis.hvals(input_)]
-        self.redis.delete(input_)
-        return {'input_': items}
-
-    def _save_input_data(self, **kwargs):
-        input_ = kwargs.pop('input_', None)
-        if not isinstance(input_, list):
-            return {}
-        key = str(uuid.uuid4())
-        for i, value in enumerate(input_):
-            self.redis.hset(key, i, self._encode(value))
-        return {'input_': str(key)}
 
 
 class RedisWorker(RedisNode, WorkerInterface):

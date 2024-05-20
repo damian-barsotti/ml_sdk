@@ -1,6 +1,5 @@
 import uuid
 from abc import ABCMeta, abstractmethod
-from typing import Dict
 
 
 class WorkerInterface(metaclass=ABCMeta):
@@ -16,7 +15,7 @@ class WorkerInterface(metaclass=ABCMeta):
 
         key, kwargs = self._consume()
         method = kwargs.pop('method', None)
-        kwargs.update(self._load_input_data(**kwargs))
+
         result = execute(method, **kwargs)
 
         if key:
@@ -38,16 +37,11 @@ class WorkerInterface(metaclass=ABCMeta):
     def _consume(self, key=None):
         pass
 
-    @abstractmethod
-    def _load_input_data(self, **kwargs) -> Dict:
-        pass
-
 
 class DispatcherInterface(metaclass=ABCMeta):
     def dispatch(self, method, **kwargs):
         key = uuid.uuid4().hex
         kwargs['method'] = method
-        kwargs.update(self._save_input_data(**kwargs))
         self._produce(kwargs, key)
         result = self._get_reply(key)
         return result
@@ -70,8 +64,4 @@ class DispatcherInterface(metaclass=ABCMeta):
 
     @abstractmethod
     def _consume(self, key=None):
-        pass
-
-    @abstractmethod
-    def _save_input_data(self, **kwargs) -> Dict:
         pass
