@@ -1,8 +1,18 @@
 import uuid
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 
-class WorkerInterface(metaclass=ABCMeta):
+class ProducerConsumerInterface(ABC):
+    @abstractmethod
+    def _produce(self, message, key=None):
+        pass
+
+    @abstractmethod
+    def _consume(self, key=None):
+        pass
+
+
+class WorkerInterface(ProducerConsumerInterface):
 
     def _listen(self):
 
@@ -29,16 +39,9 @@ class WorkerInterface(metaclass=ABCMeta):
     def stop(self):
         self.stop = True
 
-    @abstractmethod
-    def _produce(self, message, key=None):
-        pass
 
-    @abstractmethod
-    def _consume(self, key=None):
-        pass
+class DispatcherInterface(ProducerConsumerInterface):
 
-
-class DispatcherInterface(metaclass=ABCMeta):
     def dispatch(self, method, **kwargs):
         key = uuid.uuid4().hex
         kwargs['method'] = method
@@ -55,13 +58,10 @@ class DispatcherInterface(metaclass=ABCMeta):
         return result
 
     @abstractmethod
-    def _produce(self, message, key=None):
-        pass
-
-    @abstractmethod
     def _broadcast(self, message):
         pass
 
-    @abstractmethod
-    def _consume(self, key=None):
-        pass
+__all__ = [
+    "WorkerInterface",
+    "DispatcherInterface",
+]
