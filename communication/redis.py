@@ -23,7 +23,6 @@ class RedisSettings:
 
 class RedisNode:
     def __init__(self, settings: RedisSettings):
-        self.stop = False
         self.topic = settings.topic
         redis_pool = redis.ConnectionPool(**settings.conf)
         self.redis = redis.StrictRedis(connection_pool=redis_pool)
@@ -35,9 +34,6 @@ class RedisNode:
     @staticmethod
     def _encode(msg):
         return msgpack.packb(msg, use_bin_type=True)
-
-    def stop(self):
-        self.stop = True
 
     def _get(self, key):
         while True:

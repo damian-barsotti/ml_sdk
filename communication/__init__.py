@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 
 class ProducerConsumerInterface(ABC):
+
     @abstractmethod
     def _produce(self, message, key=None):
         pass
@@ -32,12 +33,8 @@ class WorkerInterface(ProducerConsumerInterface):
             set_reply(key, result)
 
     def serve_forever(self):
-        self.stop = False
-        while not self.stop:
+        while True:
             self._listen()
-
-    def stop(self):
-        self.stop = True
 
 
 class DispatcherInterface(ProducerConsumerInterface):
