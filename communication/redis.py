@@ -39,9 +39,6 @@ class RedisNode:
     def stop(self):
         self.stop = True
 
-    def _set(self, key, message):
-        self.redis.set(key, self._encode(message))
-
     def _get(self, key):
         while True:
             message = self.redis.get(key)
@@ -83,7 +80,8 @@ class RedisWorker(RedisNode, WorkerInterface):
         self.pubsub.get_message()
 
     def _produce(self, message, key=None):
-        self._set(key, message)
+
+        self.redis.set(key, self._encode(message))
 
 
 class RedisDispatcher(RedisNode, DispatcherInterface):
