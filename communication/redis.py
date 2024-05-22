@@ -41,13 +41,12 @@ class RedisNode:
 
     def _get(self, key):
         while True:
-            message = self.redis.get(key)
+            message = self.redis.getdel(key)
             if message is None:
                 time.sleep(0.5)
                 continue
             break
         message = self._decode(message)
-        self.redis.delete(key)
         return message
 
     def _consume(self, key=None):
