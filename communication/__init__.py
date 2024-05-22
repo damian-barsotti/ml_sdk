@@ -61,6 +61,7 @@ class DispatcherInterface(ProducerConsumerInterface):
     def _broadcast(self, message):
         pass
 
+
 __all__ = [
     "WorkerInterface",
     "DispatcherInterface",
