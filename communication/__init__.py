@@ -2,18 +2,28 @@ import uuid
 from abc import ABC, abstractmethod
 
 
-class ProducerConsumerInterface(ABC):
+class ProducerInterface(ABC):
 
     @abstractmethod
     def _produce(self, key, message):
         pass
 
+
+class ConsumerInterface(ABC):
+
     @abstractmethod
-    def _consume(self, key=None):
+    def _consume(self):
         pass
 
 
-class WorkerInterface(ProducerConsumerInterface):
+class ConsumerKeyInterface(ABC):
+
+    @abstractmethod
+    def _consume(self, key):
+        pass
+
+
+class WorkerInterface(ProducerInterface, ConsumerInterface):
 
     def _listen(self):
 
@@ -37,7 +47,7 @@ class WorkerInterface(ProducerConsumerInterface):
             self._listen()
 
 
-class DispatcherInterface(ProducerConsumerInterface):
+class DispatcherInterface(ProducerInterface, ConsumerKeyInterface):
 
     def dispatch(self, method, **kwargs):
 

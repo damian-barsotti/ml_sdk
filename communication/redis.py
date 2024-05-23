@@ -35,36 +35,6 @@ class RedisNode:
     def _encode(msg):
         return msgpack.packb(msg, use_bin_type=True)
 
-    def _get(self, key):
-        while True:
-            message = self.redis.getdel(key)
-            if message is None:
-                time.sleep(0.5)
-                continue
-            break
-        message = self._decode(message)
-        return message
-
-    def _consume(self, key=None):
-        if key:
-            message = self._get(key)
-        else:
-            while True:
-                # Read broadcasted messages
-                message = self.pubsub.get_message()
-                if message is not None:
-                    if message['type'] == 'pmessage':
-                        message = message['data']
-                        break
-                # Read individual messages
-                message = self.redis.lpop(self.topic)
-                if message is not None:
-                    break
-                time.sleep(0.5)
-            message = self._decode(message)
-            key = message.pop('key')
-        return key, message
-
 
 class RedisWorker(RedisNode, WorkerInterface):
     def __init__(self, settings: RedisSettings, handler):
@@ -75,8 +45,26 @@ class RedisWorker(RedisNode, WorkerInterface):
         self.pubsub.get_message()
 
     def _produce(self, key, message):
-
         self.redis.set(key, self._encode(message))
+
+    def _consume(self):
+        while True:
+            # Read broadcasted messages
+            message = self.pubsub.get_message()
+            if message is not None:
+                if message['type'] == 'pmessage':
+                    message = message['data']
+                    break
+            # Read individual messages
+            message = self.redis.lpop(self.topic)
+            if message is not None:
+                break
+            time.sleep(0.5)
+        message = self._decode(message)
+        key = message.pop('key')
+
+        return key, message
+
 
 
 class RedisDispatcher(RedisNode, DispatcherInterface):
@@ -84,6 +72,21 @@ class RedisDispatcher(RedisNode, DispatcherInterface):
     def _produce(self, key, message):
         message['key'] = key
         self.redis.rpush(self.topic, self._encode(message))
+
+    def _consume(self, key):
+
+        def get(key):
+            while True:
+                message = self.redis.getdel(key)
+                if message is None:
+                    time.sleep(0.5)
+                    continue
+                break
+            message = self._decode(message)
+            return message
+
+        message = get(key)
+        return key, message
 
     def _broadcast(self, message):
         message['key'] = None
