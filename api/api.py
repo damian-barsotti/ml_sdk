@@ -1,7 +1,7 @@
 import logging
 import traceback
 import threading
-from fastapi import APIRouter, File, status
+from fastapi import APIRouter, File, status, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List
@@ -10,7 +10,6 @@ from ml_sdk.communication.redis import RedisDispatcher, RedisSettings
 from ml_sdk.database.redis import RedisDatabase
 from ml_sdk.database.mongo import MongoDatabase, MongoSettings
 from ml_sdk.io import (
-    FileInput,
     TestJob,
     TrainJob,
     JobID,
@@ -21,6 +20,9 @@ from ml_sdk.io.version import (ModelVersion, ModelDescription,
 
 logger = logging.getLogger()
 BATCH_SIZE = 1000
+
+ImageInput = UploadFile
+FileInput = UploadFile
 
 
 class MLAPI:

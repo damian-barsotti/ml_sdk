@@ -7,8 +7,12 @@ HERE = path.abspath(path.dirname(__file__))
 with open(path.join(HERE, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
-    requirements = f.readlines()
+with open(path.join(HERE, 'requirements-common.txt'), encoding='utf-8') as f:
+    requirements_common = f.readlines()
+
+with open(path.join(HERE, 'requirements-api.txt'), encoding='utf-8') as f:
+    requirements_api = f.readlines()
+
 
 setup(
     name='ml_sdk',
@@ -38,5 +42,6 @@ setup(
         'ml_sdk.api',
     ],
     package_dir={'ml_sdk': '.'},
-    install_requires=requirements
+    install_requires=requirements_common,
+    extras_require={'api': requirements_api}
 )

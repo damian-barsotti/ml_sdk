@@ -1,9 +1,7 @@
 from typing import List, Dict
 from ml_sdk.io.input import (
     TextInput,
-    ImageInput,
     InferenceInput,
-    FileInput,
 )
 from ml_sdk.io.version import ModelVersion, ModelDescription, AvailableModels
 from ml_sdk.io.output import (
@@ -34,9 +32,7 @@ class TrainJob(Job):
 
 
 __all__ = [
-    'FileInput',
     'TextInput',
-    'ImageInput',
     'InferenceInput',
     'InferenceOutput',
     'ClassificationOutput',

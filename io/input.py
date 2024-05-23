@@ -1,6 +1,5 @@
 from typing import Dict, List
 
-from fastapi import UploadFile
 import pandas as pd
 from pydantic import BaseModel
 
@@ -44,7 +43,3 @@ class InferenceInput(Input):
 
 class TextInput(InferenceInput):
     text: str
-
-
-ImageInput = UploadFile
-FileInput = UploadFile

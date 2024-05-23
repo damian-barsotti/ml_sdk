@@ -1,0 +1,5 @@
+pydantic>=1.2.0,<2.0.0
+redis==5.0.4
+pymongo==4.7.2
+msgpack==1.0.8
+pandas==2.2.2
