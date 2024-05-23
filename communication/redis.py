@@ -66,7 +66,6 @@ class RedisWorker(RedisNode, WorkerInterface):
         return key, message
 
 
-
 class RedisDispatcher(RedisNode, DispatcherInterface):
 
     def _produce(self, key, message):
