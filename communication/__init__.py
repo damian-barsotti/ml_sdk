@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 class ProducerConsumerInterface(ABC):
 
     @abstractmethod
-    def _produce(self, message, key):
+    def _produce(self, key, message):
         pass
 
     @abstractmethod
@@ -18,7 +18,7 @@ class WorkerInterface(ProducerConsumerInterface):
     def _listen(self):
 
         def set_reply(key, message):
-            self._produce(message, key)
+            self._produce(key, message)
 
         def execute(method, *args, **kwargs):
             func = getattr(self.handler, method)
@@ -47,7 +47,7 @@ class DispatcherInterface(ProducerConsumerInterface):
 
         key = uuid.uuid4().hex
         kwargs['method'] = method
-        self._produce(kwargs, key)
+        self._produce(key, kwargs)
         result = get_reply(key)
         return result
 
