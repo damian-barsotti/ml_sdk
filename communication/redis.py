@@ -74,14 +74,14 @@ class RedisWorker(RedisNode, WorkerInterface):
         self.pubsub.psubscribe(f'{self.topic}*')
         self.pubsub.get_message()
 
-    def _produce(self, message, key=None):
+    def _produce(self, message, key):
 
         self.redis.set(key, self._encode(message))
 
 
 class RedisDispatcher(RedisNode, DispatcherInterface):
 
-    def _produce(self, message, key=None):
+    def _produce(self, message, key):
         message['key'] = key
         self.redis.rpush(self.topic, self._encode(message))
 

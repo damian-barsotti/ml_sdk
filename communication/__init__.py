@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 class ProducerConsumerInterface(ABC):
 
     @abstractmethod
-    def _produce(self, message, key=None):
+    def _produce(self, message, key):
         pass
 
     @abstractmethod
