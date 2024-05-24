@@ -8,11 +8,6 @@ from ml_sdk.io.input import (
     InferenceInput,
 )
 from ml_sdk.io.version import ModelVersion
-from ml_sdk.io.output import (
-    InferenceOutput,
-    ReportOutput,
-)
-
 
 logger = logging.getLogger(__name__)
 
