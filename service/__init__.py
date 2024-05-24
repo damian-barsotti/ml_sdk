@@ -32,12 +32,14 @@ class MLServiceInterface(metaclass=ABCMeta):
             raise NotImplementedError
 
     def _read_config(self):
-        with open(os.path.join(self.BINARY_FOLDER, self.VERSIONS_FILE)) as setup_file:
+        file_path = os.path.join(self.BINARY_FOLDER, self.VERSIONS_FILE)
+        with open(file_path) as setup_file:
             content = json.load(setup_file)
         return content
 
     def _write_config(self, new_config):
-        with open(os.path.join(self.BINARY_FOLDER, self.VERSIONS_FILE), "w") as setup_file:
+        file_path = os.path.join(self.BINARY_FOLDER, self.VERSIONS_FILE)
+        with open(file_path, "w") as setup_file:
             json.dump(new_config, setup_file, indent=4)
 
     def predict(self, input_: Dict) -> Dict:
@@ -58,7 +60,7 @@ class MLServiceInterface(metaclass=ABCMeta):
         logger.info(f"Parsing file {filename}")
         parser = self.FILE_PARSER()
         items = list(parser.parse(filename))
-        logger.info(f"Updating metadata")
+        logger.info("Updating metadata")
         for i in items:
             input_ = self.INPUT_TYPE.preprocess(i)
             i.update({
@@ -68,7 +70,7 @@ class MLServiceInterface(metaclass=ABCMeta):
         self.train(items)
 
     def train(self, input_: List[Dict]) -> Dict:
-        logger.info(f"Starting training")
+        logger.info("Starting training")
         # Parse input
         train_input = [self.OUTPUT_TYPE(**i) for i in input_]
 
@@ -111,7 +113,8 @@ class MLServiceInterface(metaclass=ABCMeta):
     def _validate_instance(self):
         assert self.INPUT_TYPE is not None, "You have to setup an INPUT_TYPE"
         assert self.OUTPUT_TYPE is not None, "You have to setup an OUTPUT_TYPE"
-        assert self.COMMUNICATION_TYPE is not None, "You have to setup a COMMUNICATION_TYPE"
+        assert self.COMMUNICATION_TYPE is not None, (
+            "You have to setup a COMMUNICATION_TYPE")
         assert self.MODEL_NAME is not None, "You have to setup a MODEL_NAME"
 
     def serve_forever(self):
