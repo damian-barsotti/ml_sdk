@@ -1,13 +1,11 @@
-import time
 import msgpack
 import logging
 import redis
 import uuid
 from datetime import datetime
-from typing import Dict
 from ml_sdk.communication.redis import RedisSettings
 from ml_sdk.database import DatabaseInterface
-from ml_sdk.io import TestJob, TrainJob, JobID, InferenceOutput, InferenceInput, ModelVersion
+from ml_sdk.io import TestJob, TrainJob, JobID, InferenceOutput, ModelVersion
 
 
 logger = logging.getLogger(__name__)
