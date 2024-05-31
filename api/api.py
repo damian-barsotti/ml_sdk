@@ -31,7 +31,7 @@ class MLAPI:
     INPUT_TYPE = None
     OUTPUT_TYPE = None
     COMMUNICATION_TYPE = RedisDispatcher
-    DATABASE_TYPE = MongoDatabase
+    DATABASE_TYPE = RedisDatabase
     FILE_PARSER = CSVFileParser
 
     def __init__(self):

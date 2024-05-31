@@ -48,7 +48,7 @@ class RedisDatabase(DatabaseInterface):
 
     def update_test_job(self, job: TestJob, task: InferenceOutput):
         task_id = f"{self.topic}_{job.job_id}_{uuid.uuid4()}"
-        self.redis.set(task_id, self._encode(task))
+        self.redis.set(task_id, self._encode(dict(task)))
 
     def get_train_job(self, job_id: JobID) -> TrainJob:
         job = self._decode(self.redis.get(job_id))
