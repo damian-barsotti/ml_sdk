@@ -112,7 +112,7 @@ class MLAPI:
         # Job results
         job = self.database.get_test_job(JobID(job_id))
 
-        # Return file or formatted repsonse
+        # Return file or formatted response
         if as_file:
             job.results = [self.OUTPUT_TYPE(**res) for res in job.results]
             return self._create_file(job)
