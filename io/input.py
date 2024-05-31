@@ -1,6 +1,4 @@
 from typing import Dict, List
-
-import pandas as pd
 from pydantic import BaseModel
 
 
@@ -21,13 +19,14 @@ class InferenceInput(Input):
     def label_order(cls):
         return sorted(cls.__fields__.keys())
 
-    @classmethod
-    def to_dataframe(cls, input_: List, exclude: List = None):
-        # TODO types here should not be repr()
-        columns = cls.label_order()
-        for col in exclude:
-            columns.remove(col)
-        return pd.DataFrame(data=[i.dict() for i in input_], columns=columns)
+    # Deleted to not fix same pandas vesion in api and services
+    # @classmethod
+    # def to_dataframe(cls, input_: List, exclude: List = None):
+    #     # TODO types here should not be repr()
+    #     columns = cls.label_order()
+    #     for col in exclude:
+    #         columns.remove(col)
+    #     return pd.DataFrame(data=[i.dict() for i in input_], columns=columns)
 
     @classmethod
     def preprocess(cls, input_: Dict):
