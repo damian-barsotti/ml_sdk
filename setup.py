@@ -16,7 +16,7 @@ with open(path.join(HERE, 'requirements-api.txt'), encoding='utf-8') as f:
 
 setup(
     name='ml_sdk',
-    version='1.4.5',
+    version='1.5.0',
     description='An SDK to deploy your ML models'
                 ' in a common API made with FastAPI',
     long_description=long_description,
