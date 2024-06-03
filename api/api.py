@@ -65,6 +65,8 @@ class MLAPI:
         assert self.DATABASE_TYPE is not None, ("You have to setup"
                                                 " a DATABASE_TYPE")
         assert self.MODEL_NAME is not None, "You have to setup a MODEL_NAME"
+        assert callable(
+            self.FILE_PARSER), "You have to setup first a FILE_PARSER"
 
     def _add_routes(self):
         self.router.add_api_route("/",
@@ -181,8 +183,6 @@ class MLAPI:
 
     # INTERNAL
     def _parse_file(self, input_: FileInput):
-        assert callable(
-            self.FILE_PARSER), "You have to setup first a FILE_PARSER"
         parser = self.FILE_PARSER()
         items = parser.parse(input_.file)
         yield from items
