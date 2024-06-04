@@ -1,7 +1,7 @@
 import logging
 import traceback
 import threading
-from fastapi import APIRouter, File, status, UploadFile
+from fastapi import APIRouter, status, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List
@@ -122,7 +122,7 @@ class MLAPI:
             job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
             return job
 
-    def post_test(self, input_: FileInput = File(...)) -> TestJob:
+    def post_test(self, input_: FileInput) -> TestJob:
         # parsing
         items = list(self._parse_file(input_))  # TODO consume 1 by 1
 
@@ -136,7 +136,7 @@ class MLAPI:
     def get_train(self, job_id: JobID) -> TrainJob:
         return self.database.get_train_job(JobID(job_id))
 
-    def post_train(self, input_: FileInput = File(...)) -> TrainJob:
+    def post_train(self, input_: FileInput) -> TrainJob:
         # parsing
         items = list(self._parse_file(input_))  # TODO consume 1 by 1
         # TODO move this parsing to the async_train
