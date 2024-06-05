@@ -19,7 +19,6 @@ from ml_sdk.io.version import (ModelVersion, ModelDescription,
 
 
 logger = logging.getLogger()
-BATCH_SIZE = 1000
 
 ImageInput = UploadFile
 FileInput = UploadFile
@@ -33,6 +32,7 @@ class MLAPI:
     COMMUNICATION_TYPE = RedisDispatcher
     DATABASE_TYPE = RedisDatabase
     FILE_PARSER = CSVFileParser
+    BATCH_SIZE = 1000
 
     def __init__(self):
         self._validate_instance()
@@ -212,9 +212,9 @@ class MLAPI:
                     self.database.update_test_job(
                         job=job, task=self.OUTPUT_TYPE(**inference_result))
 
-        for i in range(0, len(items), BATCH_SIZE):
+        for i in range(0, len(items), self.BATCH_SIZE):
             t = threading.Thread(target=_inner, args=(
-                self.database, job, items[i:i+BATCH_SIZE]))
+                self.database, job, items[i:i+self.BATCH_SIZE]))
             t.start()
 
     def _async_train(self, job: TestJob, items: List):
