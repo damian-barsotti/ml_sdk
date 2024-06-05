@@ -1,7 +1,6 @@
 import logging
 import traceback
-import threading
-from fastapi import APIRouter, status, UploadFile
+from fastapi import APIRouter, status, UploadFile, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List
@@ -122,7 +121,8 @@ class MLAPI:
             job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
             return job
 
-    def post_test(self, input_: FileInput) -> TestJob:
+    def post_test(self, input_: FileInput,
+                  background_tasks: BackgroundTasks) -> TestJob:
         # parsing
         items = list(self._parse_file(input_))  # TODO consume 1 by 1
 
@@ -130,7 +130,8 @@ class MLAPI:
         job = self.database.create_test_job(total=len(items))
 
         # trigger tasks
-        self._async_predict(job=job, items=items)
+        self._async_predict(background_tasks, job=job, items=items)
+
         return job
 
     def get_train(self, job_id: JobID) -> TrainJob:
@@ -198,7 +199,8 @@ class MLAPI:
                 f"attachment; filename={filename}")
         return response
 
-    def _async_predict(self, job: TestJob, items: List):
+    def _async_predict(self, background_tasks: BackgroundTasks,
+                       job: TestJob, items: List):
         def _inner(database, job, items):
             predict_func = self.post_predict()
             for item in items:
@@ -213,9 +215,8 @@ class MLAPI:
                         job=job, task=self.OUTPUT_TYPE(**inference_result))
 
         for i in range(0, len(items), self.BATCH_SIZE):
-            t = threading.Thread(target=_inner, args=(
-                self.database, job, items[i:i+self.BATCH_SIZE]))
-            t.start()
+            background_tasks.add_task(_inner, self.database, job,
+                                      items[i:i+self.BATCH_SIZE])
 
     def _async_train(self, job: TestJob, items: List):
         # TODO refactor this controlling threads with batch size
