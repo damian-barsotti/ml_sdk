@@ -1,5 +1,8 @@
 import uuid
 from abc import ABC, abstractmethod
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProducerInterface(ABC):
@@ -22,7 +25,6 @@ class ConsumerKeyInterface(ABC):
     def _consume(self, key):
         pass
 
-
 class WorkerInterface(ProducerInterface, ConsumerInterface):
 
     def _listen(self):
@@ -37,6 +39,7 @@ class WorkerInterface(ProducerInterface, ConsumerInterface):
         key, kwargs = self._consume()
         method = kwargs.pop('method', None)
 
+        logger.info(f"Service execute {method}")
         result = execute(method, **kwargs)
 
         if key:
@@ -54,6 +57,8 @@ class DispatcherInterface(ProducerInterface, ConsumerKeyInterface):
         def get_reply(key):
             key, result = self._consume(key)
             return result
+
+        logger.info(f"API dispatch {method}")
 
         key = uuid.uuid4().hex
         kwargs['method'] = method
