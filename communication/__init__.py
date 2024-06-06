@@ -25,6 +25,7 @@ class ConsumerKeyInterface(ABC):
     def _consume(self, key):
         pass
 
+
 class WorkerInterface(ProducerInterface, ConsumerInterface):
 
     def _listen(self):
