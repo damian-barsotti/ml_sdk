@@ -26,7 +26,14 @@ class ConsumerKeyInterface(ABC):
         pass
 
 
-class WorkerInterface(ProducerInterface, ConsumerInterface):
+class CriticalRegion(ABC):
+
+    @abstractmethod
+    def exec_critical(self, function, *args):
+        pass
+
+
+class WorkerInterface(ProducerInterface, ConsumerInterface, CriticalRegion):
 
     def _listen(self):
 

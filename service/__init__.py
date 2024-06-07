@@ -31,6 +31,8 @@ class MLServiceInterface(metaclass=ABCMeta):
             logger.error("Communication type not implemented")
             raise NotImplementedError
 
+        self.worker = self.COMMUNICATION_TYPE(self.settings, handler=self)
+
     def _read_config(self):
         file_path = os.path.join(self.BINARY_FOLDER, self.VERSIONS_FILE)
         with open(file_path) as setup_file:
@@ -70,6 +72,13 @@ class MLServiceInterface(metaclass=ABCMeta):
         self.train(items)
 
     def train(self, input_: List[Dict]) -> Dict:
+
+        def update_config(version):
+            # Avail new version
+            config = self._read_config()
+            config["availables"].append(version.dict())
+            self._write_config(config)
+
         logger.info("Starting training")
         # Parse input
         train_input = [self.OUTPUT_TYPE(**i) for i in input_]
@@ -77,25 +86,36 @@ class MLServiceInterface(metaclass=ABCMeta):
         # Launch train
         version = self._train(train_input)
 
-        # Avail new version
-        config = self._read_config()
-        config["availables"].append(version.dict())
-        self._write_config(config)
+        self.worker.exec_critical(update_config, version)
+
         logger.info(f"New version available {version}")
+
         return version.dict()
 
     def deploy(self, input_: Dict):
+
+        def update_config(version):
+            config = self._read_config()
+            target_version = None
+            for conf in config["availables"]:
+                if conf["version"] == input_["version"]:
+                    target_version = ModelVersion(**conf)
+                    config["enabled"] = conf
+                    self._write_config(config)
+                    break
+
+            return target_version
+
         self.version = ModelVersion(**input_)
-        config = self._read_config()
-        target_version = None
-        for conf in config["availables"]:
-            if conf["version"] == input_["version"]:
-                target_version = ModelVersion(**conf)
-                self._deploy(target_version)
-                config["enabled"] = conf
-                break
-        self._write_config(config)
-        logger.info(f"Version {target_version} succesfully deployed")
+
+        target_version = self.worker.exec_critical(update_config, self.version)
+
+        if target_version:
+            self._deploy(target_version)
+            logger.info(f"Version {target_version} succesfully deployed")
+        else:
+            logger.info(f"Can't find version {input_['version']} to deploy")
+
         return target_version
 
     @abstractmethod
@@ -122,6 +142,5 @@ class MLServiceInterface(metaclass=ABCMeta):
         config = self._read_config()
         self.version = ModelVersion(**config['enabled'])
         self._deploy(self.version)
-        self.worker = self.COMMUNICATION_TYPE(self.settings, handler=self)
         logger.info(f"Initialized with version {self.version}")
         self.worker.serve_forever()

@@ -44,6 +44,8 @@ class RedisWorker(RedisNode, WorkerInterface):
         self.pubsub.psubscribe(f'{self.topic}*')
         self.pubsub.get_message()
 
+        self.lock = self.redis.lock(f"lock: {self.topic}")
+
     def _produce(self, key, message):
         self.redis.set(key, self._encode(message))
 
@@ -64,6 +66,15 @@ class RedisWorker(RedisNode, WorkerInterface):
         key = message.pop('key')
 
         return key, message
+
+    def exec_critical(self, function, *args):
+        logger.info("Enter critical section")
+        self.lock.acquire(blocking=True)
+        logger.info("Executing critical section")
+        res = function(*args)
+        self.lock.release()
+        logger.info("Exit critical section")
+        return res
 
 
 class RedisDispatcher(RedisNode, DispatcherInterface):
