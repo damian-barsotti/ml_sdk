@@ -3,6 +3,7 @@ import msgpack
 import logging
 import redis
 from dataclasses import dataclass
+from retry import retry
 from ml_sdk.communication import DispatcherInterface, WorkerInterface
 
 
@@ -85,13 +86,15 @@ class RedisDispatcher(RedisNode, DispatcherInterface):
 
     def _consume(self, key):
 
+        @retry(ValueError, delay=0.1, backoff=2, max_delay=0.5,
+               tries=10, logger=logger)
         def get(key):
-            while True:
-                message = self.redis.getdel(key)
-                if message is None:
-                    time.sleep(0.5)
-                    continue
-                break
+
+            message = self.redis.getdel(key)
+
+            if message is None:
+                raise ValueError()
+
             message = self._decode(message)
             return message
 

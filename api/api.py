@@ -1,6 +1,8 @@
 import logging
 import traceback
-from fastapi import APIRouter, status, UploadFile, BackgroundTasks
+from fastapi import (APIRouter, status,
+                     UploadFile, BackgroundTasks,
+                     HTTPException)
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List
@@ -105,8 +107,13 @@ class MLAPI:
         connector = self.connector
 
         def _inner(input_: self.INPUT_TYPE) -> self.OUTPUT_TYPE:
-            results = connector.dispatch('predict', input_=input_.dict())
-            return results
+            try:
+                result = connector.dispatch('predict', input_=input_.dict())
+            except ValueError:
+                raise HTTPException(
+                    status_code=404, detail="Service timeout for predict")
+            return result
+
         return _inner
 
     def get_test(self, job_id: JobID, as_file: bool = False) -> TestJob:
@@ -167,7 +174,14 @@ class MLAPI:
         return job
 
     def get_version(self) -> AvailableModels:
-        result = self.connector.dispatch('available_versions')
+
+        try:
+            result = self.connector.dispatch('available_versions')
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail="Service timeout for available_versions")
+
         logger.info(f"get_version {result=}")
         return result
 
@@ -177,10 +191,18 @@ class MLAPI:
         return input_
 
     def index(self) -> ModelDescription:
+
+        try:
+            version = self.connector.dispatch('enabled_version')
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail="Service timeout for enabled_version")
+
         return ModelDescription(
             **{"model": self.MODEL_NAME,
                "description": self.DESCRIPTION,
-               "version": self.connector.dispatch('enabled_version')})
+               "version": version})
 
     # INTERNAL
     def _parse_file(self, input_: FileInput):
@@ -225,7 +247,14 @@ class MLAPI:
         import threading
 
         def _inner(database, job, items):
-            model_version = self.connector.dispatch('train', input_=items)
+
+            try:
+                model_version = self.connector.dispatch('train', input_=items)
+            except ValueError:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Service timeout for train")
+
             self.database.update_train_job(job=job, version=model_version)
 
         t = threading.Thread(target=_inner, args=(self.database, job, items))
