@@ -86,8 +86,8 @@ class RedisDispatcher(RedisNode, DispatcherInterface):
 
     def _consume(self, key):
 
-        @retry(ValueError, delay=0.1, backoff=2, max_delay=0.5,
-               tries=10, logger=logger)
+        @retry(ValueError, delay=0.1, backoff=2, max_delay=1,
+               tries=15, logger=logger)
         def get(key):
 
             message = self.redis.getdel(key)
