@@ -144,7 +144,9 @@ class MLAPI:
     def get_train(self, job_id: JobID) -> TrainJob:
         return self.database.get_train_job(JobID(job_id))
 
-    def post_train(self, input_: FileInput) -> TrainJob:
+    def post_train(self,
+                   background_tasks: BackgroundTasks,
+                   input_: FileInput) -> TrainJob:
         # parsing
         items = list(self._parse_file(input_))  # TODO consume 1 by 1
         # TODO move this parsing to the async_train
@@ -170,7 +172,7 @@ class MLAPI:
         job = self.database.create_train_job()
 
         # trigger train task
-        self._async_train(job=job, items=items)
+        self._async_train(background_tasks, job=job, items=items)
         return job
 
     def get_version(self) -> AvailableModels:
@@ -240,11 +242,8 @@ class MLAPI:
             background_tasks.add_task(_inner, self.database, job,
                                       items[i:i+self.BATCH_SIZE])
 
-    def _async_train(self, job: TestJob, items: List):
+    def _async_train(self, background_tasks, job: TestJob, items: List):
         # TODO refactor this controlling threads with batch size
-        # TODO write registries with threads and then trigger the train.
-
-        import threading
 
         def _inner(database, job, items):
 
@@ -257,5 +256,4 @@ class MLAPI:
 
             self.database.update_train_job(job=job, version=model_version)
 
-        t = threading.Thread(target=_inner, args=(self.database, job, items))
-        t.start()
+        background_tasks.add_task(_inner, self.database, job, items)
