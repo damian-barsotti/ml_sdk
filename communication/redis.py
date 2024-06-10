@@ -1,4 +1,3 @@
-import time
 import msgpack
 import logging
 import redis
@@ -51,19 +50,23 @@ class RedisWorker(RedisNode, WorkerInterface):
         self.redis.set(key, self._encode(message))
 
     def _consume(self):
-        while True:
+
+        @retry(ValueError, delay=0.5, logger=None)
+        def cons():
+
             # Read broadcasted messages
             message = self.pubsub.get_message()
-            if message is not None:
-                if message['type'] == 'pmessage':
-                    message = message['data']
-                    break
+            if message is not None and message['type'] == 'pmessage':
+                return message['data']
+
             # Read individual messages
             message = self.redis.lpop(self.topic)
             if message is not None:
-                break
-            time.sleep(0.5)
-        message = self._decode(message)
+                return message
+
+            raise ValueError()
+
+        message = self._decode(cons())
         key = message.pop('key')
 
         return key, message
