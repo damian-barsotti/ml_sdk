@@ -101,7 +101,11 @@ class RedisDispatcher(RedisNode, DispatcherInterface):
             message = self._decode(message)
             return message
 
-        message = get(key)
+        try:
+            message = get(key)
+        finally:
+            self.redis.delete(key)
+
         return key, message
 
     def _broadcast(self, message):
