@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 import jwt
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -46,16 +46,19 @@ class UserInDB(User):
 
 class Auth:
 
-    def __init__(self, base_dname, router):
+    oauth2_scheme = None
 
-        self.router = router
+    def __init__(self):
 
-        self._add_routes()
+        self._validate_instance()
+
+        self.router = APIRouter()
 
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-        self.oauth2_scheme = OAuth2PasswordBearer(
-            tokenUrl=f"{base_dname}/token")
+    def _validate_instance(self):
+        assert self.oauth2_scheme is not None, ("You have to setup a"
+                                                " oauth2_scheme")
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -122,7 +125,7 @@ class Auth:
             if current_user.disabled:
                 raise HTTPException(status_code=400, detail="Inactive user")
             return current_user
-            
+
         return _inner
 
     def _add_routes(self):

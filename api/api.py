@@ -1,6 +1,6 @@
 import logging
 import traceback
-from fastapi import (APIRouter, status,
+from fastapi import (status,
                      UploadFile, BackgroundTasks,
                      HTTPException, Depends)
 from fastapi.encoders import jsonable_encoder
@@ -26,7 +26,7 @@ ImageInput = UploadFile
 FileInput = UploadFile
 
 
-class MLAPI:
+class MLAPI(Auth):
     MODEL_NAME = None
     DESCRIPTION = None
     INPUT_TYPE = None
@@ -37,7 +37,11 @@ class MLAPI:
     BATCH_SIZE = 1000
 
     def __init__(self):
+
         self._validate_instance()
+
+        super().__init__()
+
         # Communication
         if self.COMMUNICATION_TYPE == RedisDispatcher:
             comm_settings = RedisSettings(topic=self.MODEL_NAME, host='redis')
@@ -56,12 +60,8 @@ class MLAPI:
         self.database = self.DATABASE_TYPE(db_settings)
 
         # API Routes
-        self.router = APIRouter()
         self._add_routes()
-
-        self.auth = Auth(self.MODEL_NAME, self.router)
-
-        self.oauth2_scheme = self.auth.oauth2_scheme
+        super()._add_routes()
 
     def _validate_instance(self):
         assert self.INPUT_TYPE is not None, "You have to setup an INPUT_TYPE"
@@ -73,6 +73,8 @@ class MLAPI:
         assert self.MODEL_NAME is not None, "You have to setup a MODEL_NAME"
         assert callable(
             self.FILE_PARSER), "You have to setup first a FILE_PARSER"
+        assert self.oauth2_scheme is not None, ("You have to setup"
+                                                " a oauth2_scheme")
 
     def _add_routes(self):
         self.router.add_api_route("/",
@@ -182,9 +184,7 @@ class MLAPI:
 
     def get_version(self):
 
-        oauth2_scheme = self.oauth2_scheme
-
-        def _inner(token: Annotated[str, Depends(oauth2_scheme)]
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)]
                    ) -> AvailableModels:
 
             try:
