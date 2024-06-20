@@ -4,24 +4,16 @@ import jwt
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
-from passlib.context import CryptContext
 from pydantic import BaseModel
+from ml_sdk.api.users import Users, User
 
 # to get a string like this run:
 # openssl rand -hex 32
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": (
-            "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW"),
-        "disabled": False,
-    }
-}
+
+users = Users()
 
 
 class Token(BaseModel):
@@ -31,17 +23,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
-
-
-class User(BaseModel):
-    username: str
-    email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
-
-
-class UserInDB(User):
-    hashed_password: str
 
 
 class Auth:
@@ -54,30 +35,9 @@ class Auth:
 
         self.router = APIRouter()
 
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
     def _validate_instance(self):
         assert self.oauth2_scheme is not None, ("You have to setup a"
                                                 " oauth2_scheme")
-
-    def verify_password(self, plain_password, hashed_password):
-        return self.pwd_context.verify(plain_password, hashed_password)
-
-    def get_password_hash(self, password):
-        return self.pwd_context.hash(password)
-
-    def get_user(self, db, username: str):
-        if username in db:
-            user_dict = db[username]
-            return UserInDB(**user_dict)
-
-    def authenticate_user(self, fake_db, username: str, password: str):
-        user = self.get_user(fake_db, username)
-        if not user:
-            return False
-        if not self.verify_password(password, user.hashed_password):
-            return False
-        return user
 
     def create_access_token(
             self, data: dict,
@@ -109,7 +69,7 @@ class Auth:
                 token_data = TokenData(username=username)
             except InvalidTokenError:
                 raise credentials_exception
-            user = self.get_user(fake_users_db, username=token_data.username)
+            user = users.get(username=token_data.username)
             if user is None:
                 raise credentials_exception
             return user
@@ -118,9 +78,8 @@ class Auth:
 
     async def get_current_active_user(self):
 
-        async def _inner(
-                current_user: Annotated[
-                    User, Depends(self.get_current_user())],):
+        async def _inner(current_user: Annotated[
+                User, Depends(self.get_current_user())]):
 
             if current_user.disabled:
                 raise HTTPException(status_code=400, detail="Inactive user")
@@ -146,9 +105,8 @@ class Auth:
         self,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
-        user = self.authenticate_user(fake_users_db,
-                                      form_data.username,
-                                      form_data.password)
+        user = users.authenticate(form_data.username,
+                                  form_data.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
