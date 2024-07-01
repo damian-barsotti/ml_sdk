@@ -103,7 +103,7 @@ class Auth:
 
     async def login_for_access_token(
         self,
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
     ) -> Token:
         user = users.authenticate(form_data.username,
                                   form_data.password)
