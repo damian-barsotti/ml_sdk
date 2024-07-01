@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Callable
 import jwt
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
-from ml_sdk.api.users import Users, User
+from ml_sdk.api.users import Users, User, UserInDB
 
 # to get a string like this run:
 # openssl rand -hex 32
@@ -103,10 +103,12 @@ class Auth:
 
     async def login_for_access_token(
         self,
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        authenticator:
+        Callable[[str, str], UserInDB] = Depends(users.authenticator)
     ) -> Token:
-        user = users.authenticate(form_data.username,
-                                  form_data.password)
+        user = authenticator(form_data.username,
+                             form_data.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

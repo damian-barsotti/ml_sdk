@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from typing import Optional, Callable
 
 
 class User(BaseModel):
@@ -30,7 +31,11 @@ class Users():
     def __init__(self):
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def authenticate(self, username: str, password: str):
+    def authenticator(self) -> Callable[[str, str], Optional[UserInDB]]:
+        return self._authenticate
+
+    def _authenticate(self, username: str, password: str
+                      ) -> Optional[UserInDB]:
         user = self.get(username)
         if not user:
             return False
