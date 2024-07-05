@@ -17,7 +17,7 @@ class MLServiceInterface(metaclass=ABCMeta):
     OUTPUT_TYPE = None
     MODEL_NAME = None
     COMMUNICATION_TYPE = RedisWorker
-    BINARY_FOLDER = "/bin/"
+    BINARY_FOLDER = "/src/models/"
     VERSIONS_FILE = "versions.json"
 
     def __init__(self):
