@@ -1,6 +1,9 @@
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from typing import Optional, Callable
+import yaml
+
+USERS_FILE = "/app/users/users.yml"
 
 
 class User(BaseModel):
@@ -16,20 +19,10 @@ class UserInDB(User):
 
 class Users():
 
-    fake_users_db = {
-        "johndoe": {
-            "username": "johndoe",
-            "full_name": "John Doe",
-            "email": "johndoe@example.com",
-            "hashed_password": (
-                "$2b$12$EixZaYVK1fsbw1ZfbX3OXe"
-                "PaWxn96p36WQoeG6Lruj3vjPGga31lW"),
-            "disabled": False,
-        }
-    }
-
     def __init__(self):
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        with open(USERS_FILE, 'r') as file:
+            self.fake_users_db = yaml.safe_load(file)
 
     def authenticator(self) -> Callable[[str, str], Optional[UserInDB]]:
         return self._authenticate
