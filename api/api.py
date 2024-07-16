@@ -102,7 +102,7 @@ class MLAPI(Auth):
                                   methods=["GET"],
                                   response_model=TrainJob)
         self.router.add_api_route("/version/{version_id}",
-                                  self.post_version,
+                                  self.post_version(),
                                   methods=["POST"],
                                   response_model=ModelVersion)
         self.router.add_api_route("/version",
@@ -199,10 +199,15 @@ class MLAPI(Auth):
 
         return _inner
 
-    def post_version(self, version_id: VersionID):
-        input_ = ModelVersion(version=version_id)
-        self.connector.broadcast('deploy', input_=input_.dict())
-        return input_
+    def post_version(self):
+
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
+                   version_id: VersionID) -> ModelVersion:
+            input_ = ModelVersion(version=version_id)
+            self.connector.broadcast('deploy', input_=input_.dict())
+            return input_
+
+        return _inner
 
     def index(self) -> ModelDescription:
 
