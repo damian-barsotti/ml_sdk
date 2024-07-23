@@ -111,11 +111,12 @@ class MLAPI(Auth):
 
     # VIEWS
     def post_predict(self):
-        connector = self.connector
 
-        def _inner(input_: self.INPUT_TYPE) -> self.OUTPUT_TYPE:
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
+                   input_: self.INPUT_TYPE) -> self.OUTPUT_TYPE:
             try:
-                result = connector.dispatch('predict', input_=input_.dict())
+                result = self.connector.dispatch('predict',
+                                                 input_=input_.dict())
             except ValueError:
                 raise HTTPException(
                     status_code=404, detail="Service timeout for predict")
