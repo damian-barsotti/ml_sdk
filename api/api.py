@@ -86,7 +86,7 @@ class MLAPI(Auth):
                                   methods=["POST"],
                                   response_model=self.OUTPUT_TYPE)
         self.router.add_api_route("/test",
-                                  self.post_test,
+                                  self.post_test(),
                                   methods=["POST"],
                                   response_model=TestJob)
         self.router.add_api_route("/test/{job_id}",
@@ -136,18 +136,23 @@ class MLAPI(Auth):
             job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
             return job
 
-    def post_test(self, input_: FileInput,
-                  background_tasks: BackgroundTasks) -> TestJob:
-        # parsing
-        items = list(self._parse_file(input_))  # TODO consume 1 by 1
+    def post_test(self):
 
-        # job creation
-        job = self.database.create_test_job(total=len(items))
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
+                   input_: FileInput,
+                   background_tasks: BackgroundTasks) -> TestJob:
+            # parsing
+            items = list(self._parse_file(input_))  # TODO consume 1 by 1
 
-        # trigger tasks
-        self._async_predict(background_tasks, job=job, items=items)
+            # job creation
+            job = self.database.create_test_job(total=len(items))
 
-        return job
+            # trigger tasks
+            self._async_predict(token, background_tasks, job=job, items=items)
+
+            return job
+
+        return _inner
 
     def get_train(self, job_id: JobID) -> TrainJob:
         return self.database.get_train_job(JobID(job_id))
@@ -241,9 +246,9 @@ class MLAPI(Auth):
                 f"attachment; filename={filename}")
         return response
 
-    def _async_predict(self, background_tasks: BackgroundTasks,
+    def _async_predict(self, token, background_tasks: BackgroundTasks,
                        job: TestJob, items: List):
-        def _inner(database, job, items):
+        def _inner(token, database, job, items):
             predict_func = self.post_predict()
             for item in items:
                 try:
@@ -252,12 +257,12 @@ class MLAPI(Auth):
                     logger.info(
                         f"Ommited {item} Failure during parsing: {str(e)}")
                 else:
-                    inference_result = predict_func(item)
+                    inference_result = predict_func(token, item)
                     self.database.update_test_job(
                         job=job, task=self.OUTPUT_TYPE(**inference_result))
 
         for i in range(0, len(items), self.BATCH_SIZE):
-            background_tasks.add_task(_inner, self.database, job,
+            background_tasks.add_task(_inner, token, self.database, job,
                                       items[i:i+self.BATCH_SIZE])
 
     def _async_train(self, background_tasks, job: TestJob, items: List):
