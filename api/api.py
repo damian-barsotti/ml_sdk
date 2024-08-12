@@ -90,7 +90,7 @@ class MLAPI(Auth):
                                   methods=["POST"],
                                   response_model=TestJob)
         self.router.add_api_route("/test/{job_id}",
-                                  self.get_test,
+                                  self.get_test(),
                                   methods=["GET"],
                                   response_model=TestJob)
         self.router.add_api_route("/train",
@@ -124,17 +124,22 @@ class MLAPI(Auth):
 
         return _inner
 
-    def get_test(self, job_id: JobID, as_file: bool = False) -> TestJob:
-        # Job results
-        job = self.database.get_test_job(JobID(job_id))
+    def get_test(self):
 
-        # Return file or formatted response
-        if as_file:
-            job.results = [self.OUTPUT_TYPE(**res) for res in job.results]
-            return self._create_file(job)
-        else:
-            job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
-            return job
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
+                   job_id: JobID, as_file: bool = False) -> TestJob:
+            # Job results
+            job = self.database.get_test_job(JobID(job_id))
+
+            # Return file or formatted response
+            if as_file:
+                job.results = [self.OUTPUT_TYPE(**res) for res in job.results]
+                return self._create_file(job)
+            else:
+                job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
+                return job
+
+        return _inner
 
     def post_test(self):
 
