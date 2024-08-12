@@ -78,7 +78,7 @@ class MLAPI(Auth):
 
     def _add_routes(self):
         self.router.add_api_route("/",
-                                  self.index,
+                                  self.index(),
                                   methods=["GET"],
                                   response_model=ModelDescription)
         self.router.add_api_route("/predict",
@@ -215,19 +215,23 @@ class MLAPI(Auth):
 
         return _inner
 
-    def index(self) -> ModelDescription:
+    def index(self):
 
-        try:
-            version = self.connector.dispatch('enabled_version')
-        except ValueError:
-            raise HTTPException(
-                status_code=404,
-                detail="Service timeout for enabled_version")
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)]
+                   ) -> ModelDescription:
+            try:
+                version = self.connector.dispatch('enabled_version')
+            except ValueError:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Service timeout for enabled_version")
 
-        return ModelDescription(
-            **{"model": self.MODEL_NAME,
-               "description": self.DESCRIPTION,
-               "version": version})
+            return ModelDescription(
+                **{"model": self.MODEL_NAME,
+                   "description": self.DESCRIPTION,
+                   "version": version})
+
+        return _inner
 
     # INTERNAL
     def _parse_file(self, input_: FileInput):
