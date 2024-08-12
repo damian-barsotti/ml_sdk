@@ -94,7 +94,7 @@ class MLAPI(Auth):
                                   methods=["GET"],
                                   response_model=TestJob)
         self.router.add_api_route("/train",
-                                  self.post_train,
+                                  self.post_train(),
                                   methods=["POST"],
                                   response_model=TrainJob)
         self.router.add_api_route("/train/{job_id}",
@@ -164,36 +164,40 @@ class MLAPI(Auth):
     def get_train(self, job_id: JobID) -> TrainJob:
         return self.database.get_train_job(JobID(job_id))
 
-    def post_train(self,
+    def post_train(self):
+
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
                    background_tasks: BackgroundTasks,
                    input_: FileInput) -> TrainJob:
-        # parsing
-        items = list(self._parse_file(input_))  # TODO consume 1 by 1
-        # TODO move this parsing to the async_train
-        try:
-            for i in items:
-                i.update({
-                    "input": {
-                        k: i[k]
-                        for k in self.INPUT_TYPE.__fields__
-                    }
-                })
-            items = [self.OUTPUT_TYPE(**reg).dict() for reg in items]
+            # parsing
+            items = list(self._parse_file(input_))  # TODO consume 1 by 1
+            # TODO move this parsing to the async_train
+            try:
+                for i in items:
+                    i.update({
+                        "input": {
+                            k: i[k]
+                            for k in self.INPUT_TYPE.__fields__
+                        }
+                    })
+                items = [self.OUTPUT_TYPE(**reg).dict() for reg in items]
 
-        except Exception as exc:
-            traceback.print_exc()
-            return JSONResponse(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                content=jsonable_encoder(
-                    {"detail": exc, "Error": "Input file corrupt"}),
-            )
+            except Exception as exc:
+                traceback.print_exc()
+                return JSONResponse(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    content=jsonable_encoder(
+                        {"detail": exc, "Error": "Input file corrupt"}),
+                )
 
-        # job creation
-        job = self.database.create_train_job()
+            # job creation
+            job = self.database.create_train_job()
 
-        # trigger train task
-        self._async_train(background_tasks, job=job, items=items)
-        return job
+            # trigger train task
+            self._async_train(background_tasks, job=job, items=items)
+            return job
+
+        return _inner
 
     def get_version(self):
 
