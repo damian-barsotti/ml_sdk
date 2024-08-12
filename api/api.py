@@ -133,10 +133,12 @@ class MLAPI(Auth):
 
             # Return file or formatted response
             if as_file:
-                job.results = [self.OUTPUT_TYPE(**res) for res in job.results]
+                job.results = [
+                    self.OUTPUT_TYPE(**res) for res in job.results]
                 return self._create_file(job)
             else:
-                job.results = [self.OUTPUT_TYPE(**res) for res in job.results[:10]]
+                job.results = [
+                    self.OUTPUT_TYPE(**res) for res in job.results[:10]]
                 return job
 
         return _inner
