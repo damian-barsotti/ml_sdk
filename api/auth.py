@@ -5,13 +5,10 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
+import yaml
 from ml_sdk.api.users import Users, User, UserInDB
 
-# to get a string like this run:
-# openssl rand -hex 32
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+CONF_FILE = "/app/users/conf.yml"
 
 users = Users()
 
@@ -35,6 +32,9 @@ class Auth:
 
         self.router = APIRouter()
 
+        with open(CONF_FILE, 'r') as file:
+            self.conf = yaml.safe_load(file)
+
     def _validate_instance(self):
         assert self.oauth2_scheme is not None, ("You have to setup a"
                                                 " oauth2_scheme")
@@ -48,7 +48,9 @@ class Auth:
         else:
             expire = datetime.now(timezone.utc) + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        encoded_jwt = jwt.encode(
+            to_encode, self.conf['SECRET_KEY'],
+            algorithm=self.conf['ALGORITHM'])
         return encoded_jwt
 
     async def get_current_user(self):
@@ -62,7 +64,8 @@ class Auth:
             )
 
             try:
-                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                payload = jwt.decode(token, self.conf['SECRET_KEY'],
+                                     algorithm=self.conf['ALGORITHM'])
                 username: str = payload.get("sub")
                 if username is None:
                     raise credentials_exception
@@ -115,7 +118,8 @@ class Auth:
                 detail="Incorrect username or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(
+            minutes=self.conf['ACCESS_TOKEN_EXPIRE_MINUTES'])
         access_token = self.create_access_token(
             data={"sub": user.username}, expires_delta=access_token_expires
         )
