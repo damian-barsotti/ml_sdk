@@ -98,7 +98,7 @@ class MLAPI(Auth):
                                   methods=["POST"],
                                   response_model=TrainJob)
         self.router.add_api_route("/train/{job_id}",
-                                  self.get_train,
+                                  self.get_train(),
                                   methods=["GET"],
                                   response_model=TrainJob)
         self.router.add_api_route("/version/{version_id}",
@@ -161,8 +161,14 @@ class MLAPI(Auth):
 
         return _inner
 
-    def get_train(self, job_id: JobID) -> TrainJob:
-        return self.database.get_train_job(JobID(job_id))
+    def get_train(self):
+
+        def _inner(token: Annotated[str, Depends(self.oauth2_scheme)],
+                   job_id: JobID) -> TrainJob:
+
+            return self.database.get_train_job(JobID(job_id))
+
+        return _inner
 
     def post_train(self):
 
