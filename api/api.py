@@ -248,7 +248,7 @@ class MLAPI(Auth):
 
     def _async_predict(self, token, background_tasks: BackgroundTasks,
                        job: TestJob, items: List):
-        def _inner(token, database, job, items):
+        def _inner(items):
             predict_func = self.post_predict()
             for item in items:
                 try:
@@ -262,8 +262,7 @@ class MLAPI(Auth):
                         job=job, task=self.OUTPUT_TYPE(**inference_result))
 
         for i in range(0, len(items), self.BATCH_SIZE):
-            background_tasks.add_task(_inner, token, self.database, job,
-                                      items[i:i+self.BATCH_SIZE])
+            background_tasks.add_task(_inner, items[i:i+self.BATCH_SIZE])
 
     def _async_train(self, background_tasks, job: TestJob, items: List):
         # TODO refactor this controlling threads with batch size
