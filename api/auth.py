@@ -107,8 +107,8 @@ class Auth:
     async def login_for_access_token(
         self,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        authenticator:
-        Callable[[str, str], UserInDB] = Depends(users.authenticator)
+        authenticator: Annotated[
+            Callable[[str, str], UserInDB], Depends(users.authenticator)]
     ) -> Token:
         user = authenticator(form_data.username,
                              form_data.password)
