@@ -45,8 +45,8 @@ class CSVFileParser(FileParser):
     def parse(file: SpooledTemporaryFile) -> Iterable:
         try:
             df = pd.read_csv(file._file,
-                             warn_bad_lines=True,
-                             error_bad_lines=False)
+                             on_bad_lines='warn'
+                             )
         except UnicodeDecodeError:
             file.seek(0)
             df = pd.read_csv(file._file,
